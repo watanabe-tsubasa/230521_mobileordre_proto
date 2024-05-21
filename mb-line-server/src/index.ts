@@ -38,7 +38,14 @@ const handleEvent = async (
   if (event.type !== 'message' || event.message.type !== 'text') return;
   if (!event.replyToken) return;
   const { text } = event.message;
-
+  fetch('https://api.line.me/v2/bot/chat/loading/start', {
+    method: 'POST',
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({"chatId": event.source?.userId})
+  })
   const chat = await createChat(openaiApiKey, text);
   const message: messagingApi.ReplyMessageRequest = {
     replyToken: event.replyToken,
