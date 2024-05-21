@@ -1,4 +1,4 @@
-name = "mb_line_server"
+name = "mb-line-server"
 compatibility_date = "2023-12-01"
 
 # [vars]
