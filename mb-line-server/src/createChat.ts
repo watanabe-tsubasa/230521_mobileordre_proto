@@ -1,7 +1,8 @@
 import OpenAI from "openai";
-import { prompt } from "./prompt";
+import { prompt } from "./utils/prompt";
+import { gptResponse } from "./utils/storeList";
 
-export const createChat = async (apiKey: string, text: string) => {
+export const createChat = async (apiKey: string, text: string): Promise<gptResponse> => {
   const openai = new OpenAI({ apiKey: apiKey });
   try {
     const completion = await openai.chat.completions.create({
@@ -10,14 +11,19 @@ export const createChat = async (apiKey: string, text: string) => {
         {"role": "user", "content": text},
       ],
       model: "gpt-4o",
+      response_format: { type: "json_object"}
     });
     const { content } = completion.choices[0].message
     if (!content) {
       throw new Error('Empty response from OpenAI')
     }
-    return content
+    const parsedContent = JSON.parse(content)
+    if (!parsedContent.storeList || !Array.isArray(parsedContent.storeList)) {
+      throw new Error('Invalid response format from OpenAI');
+    }
+    return { storeList: parsedContent.storeList };
   } catch (error) {
     console.error('Error creating chat:', error);
-    return '通信のよいところで再度お願いします'
+    return { storeList: [] }
   }
 }

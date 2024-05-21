@@ -1,9 +1,10 @@
 import { 
   messagingApi,
-  webhook
+  webhook,
 } from '@line/bot-sdk'
 import { Hono } from 'hono'
 import { createChat } from './createChat'
+import { createMessages } from './utils/createMessage'
 
 type Bindings = {
   CHANNEL_ACCESS_TOKEN: string,
@@ -47,21 +48,19 @@ const handleEvent = async (
     body: JSON.stringify({"chatId": event.source?.userId})
   })
   const chat = await createChat(openaiApiKey, text);
-  const message: messagingApi.ReplyMessageRequest = {
+  const messages = createMessages(chat) as messagingApi.Message[]
+  const responseBody: messagingApi.ReplyMessageRequest = {
     replyToken: event.replyToken,
-    messages: [{
-      type: 'text',
-      text: chat
-    }]
+    messages: messages 
   }
-
+  // `${chat.storeList}`
   return fetch('https://api.line.me/v2/bot/message/reply', {
     method: 'POST',
     headers: {
       "Authorization": `Bearer ${accessToken}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(message)
+    body: JSON.stringify(responseBody)
   })
 }
 
